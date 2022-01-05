@@ -1,0 +1,36 @@
+bool Verify(struct user users)
+{
+    bool result = true;
+    if(VerifyNcode(users.nCode) == true && VerifyPhone(users.phone) == true && VerifyPassword(users.password) == true && VerifyEmail(users.email) == true && VerifyUserName(users.userName)== true)
+        result = true;
+    else
+        result = false;
+
+    return result;
+}
+
+struct GetSignUpData(void)
+{
+    printf("first name: ");
+    scanf("%s", &user.firstName);
+    printf("\nlast name: ");
+    scanf("%s", &user.lastName);
+    printf("\nuser name: ");
+    scanf("%s", &user.userName);
+    printf("\nnational code: ");
+    scanf("%s", &user.nCode);
+    printf("\nphone number: ");
+    scanf("%s", &user.phone);
+    printf("\nemail address: ");
+    scanf("%s", &user.email);
+    printf("\npassword: ");
+    scanf("%s", &user.password);
+    printf("\nPassword verification: ");
+    scanf("%s", &user.passwordVerification);
+}
+
+
+char Hash(char pass[])
+{
+
+}
