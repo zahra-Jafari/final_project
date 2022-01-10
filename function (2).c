@@ -4,7 +4,7 @@
 #include<time.h>
 #include<stdlib.h>
 
-#define NUM 20
+#define NUM 50
 
 
 struct date{
@@ -14,7 +14,7 @@ struct date{
 };
 struct cost{
     int price;
-    char source[NUM];
+    char scource[NUM];
     char description[NUM];
     struct date dates;
     struct cost *next;
@@ -22,7 +22,7 @@ struct cost{
 
 struct income{
     int price;
-    char source[NUM];
+    char scource[NUM];
     char description[NUM];
     struct date dates;
     struct income *next;
@@ -51,10 +51,8 @@ struct banUser{
 };
 
 typedef enum { false = 0, true = 1 } bool;
-
+//1. Programming rights !!!\n2. Subsidy.\n3. Family allowance money.\n4. University Scholarship!
 char INCOME_SOURCE[4][50] = {"Programming rights !!!","Subsidy.","Family allowance money.","University!"};
-char COST_SOURCE[7][50] = {"Clothing.","Travel.","Tuition fees.","Entertainment.", "Pay bills.", "Medical expenses.", "Charity help."};
-
 
 void clear()
 {
@@ -389,7 +387,7 @@ bool CheckPasswordRight(char userName[], char password[])
 
 
 
-struct income * ReadInCome(char username[])
+struct income * ReadInComes(char username[])
 {
     bool result = true;
     int test;
@@ -410,12 +408,11 @@ struct income * ReadInCome(char username[])
 
         head = malloc(sizeof(struct income));
         head->price = temp.price;
-        strcpy(head->source, temp.source);
+        strcpy(head->scource, temp.scource);
         head->dates.year = temp.dates.year;
         head->dates.month = temp.dates.month;
         head->dates.day = temp.dates.day;
         strcpy(head->description, temp.description);
-
         head->next = NULL;
     }
     fclose(fp);
@@ -424,7 +421,7 @@ struct income * ReadInCome(char username[])
 }
 
 
-struct cost* ReadCost(char username[])
+struct cost* ReadCosts(char username[])
 {
     bool result = true;
     int test;
@@ -445,7 +442,7 @@ struct cost* ReadCost(char username[])
         head = malloc(sizeof(struct cost));
 
         head->price = temp.price;
-        strcpy(head->source, temp.source);
+        strcpy(head->scource, temp.scource);
         head->dates.year = temp.dates.year;
         head->dates.month = temp.dates.month;
         head->dates.day = temp.dates.day;
@@ -461,15 +458,20 @@ struct cost* ReadCost(char username[])
 struct income ReadNewInComeData()
 {
     struct income newIncome;
-
+	int IDInComeSource;
     printf("Income amount: ");
     scanf("%d", &newIncome.price);
     clear();
     printf("\nIncome source number: \n");
-    printf("1. Programming rights !!!\n2. Subsidy.\n3. Family allowance money.\n4. University Scholarship!\n");
+    for(int i;i<4;i++){
+    	printf("%d. %s \n",i+1,INCOME_SOURCE[i]);
+	}
     printf("please enter your choice: ");
-    scanf("%d", &newIncome.source);
+    scanf("%d", &IDInComeSource);
+    printf("%d",IDInComeSource-1);
+    printf("%s",INCOME_SOURCE[IDInComeSource-1]);
     clear();
+    strcpy(newIncome.scource,INCOME_SOURCE[IDInComeSource-1]);
     printf("\nIncome Date (yyyy/mm/dd): ");
     scanf("%d%*c%d%*c%d", &newIncome.dates.year, &newIncome.dates.month, &newIncome.dates.day);
     clear();
@@ -507,23 +509,41 @@ bool AddInComeToFile(struct income incomes, struct user uses)
 
 
 
-bool AddInComeToLinkedList(struct income newIncome, struct user uses)
+bool AddInComeToLinkedList(struct income newIncome, struct user user)
 {
 
-    struct income *curr, *latter;
-    curr = malloc(sizeof(struct income));
-    latter = malloc(sizeof(struct income));
+    struct income *curr, *latt;
+    curr = &user.userIncomes;
+    if(curr==NULL){
+    	user->userIncomes = malloc(sizeof(struct income));
+    	latt = user.userIncomes;
+    	latt = malloc(sizeof(struct income));
 
-    latter->price = newIncome.price;
-    strcpy(latter->source, newIncome.source);
-    latter->dates.year = newIncome.dates.year;
-    latter->dates.month = newIncome.dates.month;
-    latter->dates.day = newIncome.dates.day;
-    strcpy(latter->description, newIncome.description);
+	    latt->price = newIncome.price;
+	    strcpy(latt->scource, newIncome.scource);
+	    latt->dates.year = newIncome.dates.year;
+	    latt->dates.month = newIncome.dates.month;
+	    latt->dates.day = newIncome.dates.day;
+	    latt->next = NULL;
+	    strcpy(latt->description, newIncome.description);
+    }
+    else{
+	    while(curr->next != NULL){
+	    	curr = curr->next
+		}
+	    latt = malloc(sizeof(struct income));
 
-    curr->next = latter;
-    curr = latter;
+	    latt->price = newIncome.price;
+	    strcpy(latt->scource, newIncome.scource);
+	    latt->dates.year = newIncome.dates.year;
+	    latt->dates.month = newIncome.dates.month;
+	    latt->dates.day = newIncome.dates.day;
+	    latt->next = NULL;
+	    strcpy(latt->description, newIncome.description);
 
+	    curr->next = latt;
+	    curr = latt;
+	}
     return true;
 }
 
@@ -551,7 +571,7 @@ struct cost ReadNewCostData()
     printf("\nCost item: \n");
     printf("1. Clothing\n2. Travel\n3. Tuition fees\n4. Entertainment\n5. Pay bills\n6. Medical expenses\n7. Charity help\n");
     printf("please enter your choice: ");
-    scanf("%d", &newCost.source);
+    scanf("%d", &newCost.scource);
     clear();
     printf("\nCost Date (yyyy/mm/dd): ");
     scanf("%d%*c%d%*c%d", &newCost.dates.year, &newCost.dates.month, &newCost.dates.day);
@@ -589,19 +609,19 @@ bool AddCostToFile(struct cost costs, struct user uses)
 
 bool AddCostToLinkedList(struct cost newCost, struct user uses)
 {
-    struct cost *curr, *latter;
+    struct cost *curr, *latt;
     curr = malloc(sizeof(struct cost));
-    latter = malloc(sizeof(struct cost));
+    latt = malloc(sizeof(struct cost));
 
-    latter->price = newCost.price;
-    strcpy(latter->source, newCost.source);
-    latter->dates.year = newCost.dates.year;
-    latter->dates.month = newCost.dates.month;
-    latter->dates.day = newCost.dates.day;
-    strcpy(latter->description, newCost.description);
+    latt->price = newCost.price;
+    strcpy(latt->scource, newCost.scource);
+    latt->dates.year = newCost.dates.year;
+    latt->dates.month = newCost.dates.month;
+    latt->dates.day = newCost.dates.day;
+    strcpy(latt->description, newCost.description);
 
-    curr->next = latter;
-    curr = latter;
+    curr->next = latt;
+    curr = latt;
 
     return true;
 }
@@ -686,7 +706,9 @@ void ChangePhone(struct user users)
 
 void main()
 {
-    
+	struct income temp;
+ 	temp=ReadNewInComeData();
+ 	printf("%d %s %s",temp.price,temp.description,temp.scource);
 }
 
 
