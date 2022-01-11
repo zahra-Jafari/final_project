@@ -514,7 +514,7 @@ bool AddInComeToLinkedList(struct income newIncome, struct user user)
 
     struct income *curr, *latt;
     curr = &user.userIncomes;
-    if(curr==NULL){
+    if(curr == NULL){
     	user->userIncomes = malloc(sizeof(struct income));
     	latt = user.userIncomes;
     	latt = malloc(sizeof(struct income));

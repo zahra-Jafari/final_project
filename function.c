@@ -16,7 +16,7 @@ struct cost{
     int price;
     char source[NUM];
     char description[NUM];
-    struct date dates;
+    struct date *dates;
     struct cost *next;
 };
 
@@ -24,7 +24,7 @@ struct income{
     int price;
     char source[NUM];
     char description[NUM];
-    struct date dates;
+    struct date *dates;
     struct income *next;
 };
 
@@ -37,8 +37,8 @@ struct user{
     char email[NUM];
     char userName[NUM];
     char password[NUM];
-    struct income userIncomes;
-    struct cost userCosts;
+    struct income *userIncomes;
+    struct cost *userCosts;
     struct user *next;
 };
 
@@ -411,9 +411,9 @@ struct income * ReadInCome(char username[])
         head = malloc(sizeof(struct income));
         head->price = temp.price;
         strcpy(head->source, temp.source);
-        head->dates.year = temp.dates.year;
-        head->dates.month = temp.dates.month;
-        head->dates.day = temp.dates.day;
+        head->dates->year = temp.dates->year;
+        head->dates->month = temp.dates->month;
+        head->dates->day = temp.dates->day;
         strcpy(head->description, temp.description);
 
         head->next = NULL;
@@ -446,9 +446,9 @@ struct cost* ReadCost(char username[])
 
         head->price = temp.price;
         strcpy(head->source, temp.source);
-        head->dates.year = temp.dates.year;
-        head->dates.month = temp.dates.month;
-        head->dates.day = temp.dates.day;
+        head->dates->year = temp.dates->year;
+        head->dates->month = temp.dates->month;
+        head->dates->day = temp.dates->day;
         strcpy(head->description, temp.description);
 
         head->next = NULL;
@@ -471,7 +471,7 @@ struct income ReadNewInComeData()
     scanf("%d", &newIncome.source);
     clear();
     printf("\nIncome Date (yyyy/mm/dd): ");
-    scanf("%d%*c%d%*c%d", &newIncome.dates.year, &newIncome.dates.month, &newIncome.dates.day);
+    scanf("%d%*c%d%*c%d", &newIncome.dates->year, &newIncome.dates->month, &newIncome.dates->day);
     clear();
     printf("Description (within one line): ");
     gets(newIncome.description);
@@ -507,25 +507,47 @@ bool AddInComeToFile(struct income incomes, struct user uses)
 
 
 
-bool AddInComeToLinkedList(struct income newIncome, struct user uses)
+bool AddInComeToLinkedList(struct income newIncome, struct user user)
 {
 
-    struct income *curr, *latter;
-    curr = malloc(sizeof(struct income));
-    latter = malloc(sizeof(struct income));
+    struct income *curr, *latter, *head;
+    head = (struct income*)malloc(sizeof(struct income));
 
-    latter->price = newIncome.price;
-    strcpy(latter->source, newIncome.source);
-    latter->dates.year = newIncome.dates.year;
-    latter->dates.month = newIncome.dates.month;
-    latter->dates.day = newIncome.dates.day;
-    strcpy(latter->description, newIncome.description);
+    if(head==NULL){
 
-    curr->next = latter;
-    curr = latter;
+	    head->price = newIncome.price;
+	    strcpy(head->source, newIncome.source);
+        head->dates = malloc(sizeof(struct date));
+	    head->dates->year = newIncome.dates->year;
+	    head->dates->month = newIncome.dates->month;
+	    head->dates->day = newIncome.dates->day;
+	    strcpy(head->description, newIncome.description);
+        head->next = NULL;
+        curr = head;
+    }
+    else{
+	    while(curr->next != NULL)
+        {
+            curr = curr->next;
+        }
+	    	
+	    latter = (struct income*)malloc(sizeof(struct income));
 
+	    latter->price = newIncome.price;
+	    strcpy(latter->source, newIncome.source);
+        latter->dates = malloc(sizeof(struct date));
+	    latter->dates->year = newIncome.dates->year;
+	    latter->dates->month = newIncome.dates->month;
+	    latter->dates->day = newIncome.dates->day;
+	    latter->next = NULL;
+	    strcpy(latter->description, newIncome.description);
+
+	    curr->next = latter;
+	    curr = latter;
+	}
     return true;
 }
+
 
 
 bool AddInCome(struct income incomes, struct user uses)
@@ -589,19 +611,41 @@ bool AddCostToFile(struct cost costs, struct user uses)
 
 bool AddCostToLinkedList(struct cost newCost, struct user uses)
 {
-    struct cost *curr, *latter;
-    curr = malloc(sizeof(struct cost));
-    latter = malloc(sizeof(struct cost));
+    struct cost *curr, *latter, *head;
+    head = (struct cost*)malloc(sizeof(struct cost));
 
-    latter->price = newCost.price;
-    strcpy(latter->source, newCost.source);
-    latter->dates.year = newCost.dates.year;
-    latter->dates.month = newCost.dates.month;
-    latter->dates.day = newCost.dates.day;
-    strcpy(latter->description, newCost.description);
+    if(head==NULL){
+	    head->price = newCost.price;
+	    strcpy(head->source, newCost.source);
+        head->dates = malloc(sizeof(struct date));
+	    head->dates->year = newCost.dates->year;
+	    head->dates->month = newCost.dates->month;
+	    head->dates->day = newCost.dates->day;
+	    strcpy(head->description, newCost.description);
+        head->next = NULL;
+        curr = head;
+    }
+    else{
+	    while(curr->next != NULL)
+        {
+            curr = curr->next;
+        }
+	    	
+	    latter = (struct cost*)malloc(sizeof(struct cost));
 
-    curr->next = latter;
-    curr = latter;
+	    latter->price = newCost.price;
+	    strcpy(latter->source, newCost.source);
+        latter->dates = malloc(sizeof(struct date));
+	    latter->dates->year = newCost.dates->year;
+	    latter->dates->month = newCost.dates->month;
+	    latter->dates->day = newCost.dates->day;
+	    latter->next = NULL;
+	    strcpy(latter->description, newCost.description);
+
+	    curr->next = latter;
+	    curr = latter;
+	}
+
 
     return true;
 }
@@ -617,8 +661,6 @@ bool AddCost(struct cost costs, struct user uses)
         }
     return result;
 }
-
-
 
 
 
