@@ -4,13 +4,14 @@
 #include<time.h>
 #include<stdlib.h>
 
-#define NUM 20
+#define NUM 50
 
 
 struct date{
     int year;
     int month;
     int day;
+    struct date *next;
 };
 struct cost{
     int price;
@@ -43,10 +44,8 @@ struct user{
 };
 
 struct banUser{
-    char userNeme[NUM];
-    int hour;
-    int min;
-    int seconds;
+    char userName[NUM];
+    int time;
     struct banUser *next;
 };
 
@@ -293,13 +292,9 @@ bool BanUserName(char userName[])
 {
     bool result = true;
     int test;
-    struct banUser banUsers;
-    strcpy(banUsers.userNeme, userName);
-    int timer = time(NULL);
-
-    banUsers.seconds = (time(NULL)%60);
-    banUsers.min = (time(NULL)%3600)/60;
-    banUsers.hour = time(NULL)/3600;
+    struct banUser newBanUser;
+    strcpy(newBanUser.userName, userName);
+    newBanUser.time = time(NULL);
 
     FILE * fp;
     fp = fopen("banUser.txt", "a+");
@@ -307,9 +302,34 @@ bool BanUserName(char userName[])
         result = false;
     else
     {
-        test = fwrite(&banUsers, sizeof(struct banUser), 1, fp);
+        test = fwrite(&newBanUser, sizeof(struct banUser), 1, fp);
         if(test != 1)
-               result = false;
+        {
+            struct banUser *curr, *latter, *head;
+            head = (struct banUser*)malloc(sizeof(struct banUser));
+
+            if(head==NULL){
+
+                head->time = newBanUser.time;
+                strcpy(head->userName, newBanUser.userName);
+                head->next = NULL;
+                curr = head;
+            }
+            else{
+                while(curr->next != NULL)
+                {
+                    curr = curr->next;
+                }
+                    
+                latter = (struct banUser*)malloc(sizeof(struct banUser));
+
+                latter->time = newBanUser.time;
+                strcpy(latter->userName, newBanUser.userName);
+                curr->next = latter;
+                curr = latter;
+            }
+            result = false;
+        }         
     }
     fclose(fp);
     return result;
@@ -319,12 +339,9 @@ bool BanUserName(char userName[])
 bool CheckUserNameNotBan(char userName[])
 {
     bool result = false;
-    struct banUser banUsers[8];
-    int timer = time(NULL), hour, min, seconds;
-    seconds = (time(NULL)%60);
-    min = (time(NULL)%3600)/60;
-    hour = time(NULL)/3600;
-    int i;
+    struct banUser banUsers;
+    int timer = time(NULL);
+    
     FILE *fp;
     fp = fopen("banUser.txt", "r");
     if (fp == NULL)
@@ -332,16 +349,22 @@ bool CheckUserNameNotBan(char userName[])
     else
     {
         fread(&banUsers, sizeof(struct banUser), 8, fp);
-        for(i=0;i<8;i++)
-        {
-
-            if (strcmp(banUsers[i].userNeme, userName) == 0)
+        
+        struct banUser *temp, *head;
+        temp = head;
+        do{
+            if (strcmp(banUsers.userName, userName) == 0)
             {
                 //check time
                 result = true;
                 break;
             }
-        }
+            temp = temp->next;
+
+        }while(temp != NULL);
+        
+        
+        
     }
     fclose(fp);
     return result;
@@ -457,6 +480,14 @@ struct cost* ReadCost(char username[])
 }
 
 
+struct user ReadData(struct user userData)
+{
+    userData.userIncomes = ReadInCome(userData.userName);
+    userData.userCosts = ReadCost(userData.userName);
+
+    return userData;
+}
+
 
 struct income ReadNewInComeData()
 {
@@ -509,42 +540,34 @@ bool AddInComeToFile(struct income incomes, struct user uses)
 
 bool AddInComeToLinkedList(struct income newIncome, struct user user)
 {
+    struct user *head;
+    struct income *headIncome = (struct income*)malloc(sizeof(struct income));
+    
+    headIncome->price = newIncome.price;
+    strcpy(headIncome->source, newIncome.source);
+    headIncome->dates = malloc(sizeof(struct date));
+    headIncome->dates->year = newIncome.dates->year;
+    headIncome->dates->month = newIncome.dates->month;
+    headIncome->dates->day = newIncome.dates->day;
+    strcpy(headIncome->description, newIncome.description);
+    headIncome->next = NULL;
+    headIncome->dates->next = NULL;
 
-    struct income *curr, *latter, *head;
-    head = (struct income*)malloc(sizeof(struct income));
-
-    if(head==NULL){
-
-	    head->price = newIncome.price;
-	    strcpy(head->source, newIncome.source);
-        head->dates = malloc(sizeof(struct date));
-	    head->dates->year = newIncome.dates->year;
-	    head->dates->month = newIncome.dates->month;
-	    head->dates->day = newIncome.dates->day;
-	    strcpy(head->description, newIncome.description);
-        head->next = NULL;
-        curr = head;
+    if(head->userIncomes == NULL)
+    {
+        head->userIncomes = headIncome;
     }
-    else{
-	    while(curr->next != NULL)
+    else
+    {
+        struct income *curr;
+        while(curr->next != NULL)
         {
             curr = curr->next;
         }
-	    	
-	    latter = (struct income*)malloc(sizeof(struct income));
-
-	    latter->price = newIncome.price;
-	    strcpy(latter->source, newIncome.source);
-        latter->dates = malloc(sizeof(struct date));
-	    latter->dates->year = newIncome.dates->year;
-	    latter->dates->month = newIncome.dates->month;
-	    latter->dates->day = newIncome.dates->day;
-	    latter->next = NULL;
-	    strcpy(latter->description, newIncome.description);
-
-	    curr->next = latter;
-	    curr = latter;
-	}
+        curr->next = headIncome;
+    }
+        
+    
     return true;
 }
 
@@ -576,7 +599,7 @@ struct cost ReadNewCostData()
     scanf("%d", &newCost.source);
     clear();
     printf("\nCost Date (yyyy/mm/dd): ");
-    scanf("%d%*c%d%*c%d", &newCost.dates.year, &newCost.dates.month, &newCost.dates.day);
+    scanf("%d%*c%d%*c%d", &newCost.dates->year, &newCost.dates->month, &newCost.dates->day);
     clear();
     printf("Description (within one line): ");
     gets(newCost.description);
@@ -728,7 +751,9 @@ void ChangePhone(struct user users)
 
 void main()
 {
-    
+
+    struct cost test= ReadNewCostData();
+    int resultOf ;
 }
 
 
